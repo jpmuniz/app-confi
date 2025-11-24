@@ -4,59 +4,71 @@ import { markNotificationAsRead } from "../application/markAsRead";
 import { removeNotification } from "../application/removeNotification";
 
 
-function useNotifications({ userId } = {}) {
+export function useNotifications({ userId } = {}) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const mountedRef = useRef(true);
-  useEffect(() => () => { mountedRef.current = false; }, []);
+  const cancelledRef = useRef(false);
 
   const load = useCallback(async () => {
+    cancelledRef.current = false;
     setLoading(true);
     setError(null);
 
     try {
       const list = await getNotifications({ userId });
-      if (!mountedRef.current) return;
-      setNotifications(list);
+      
+      if (!cancelledRef.current) {
+        setNotifications(list);
+        setLoading(false);
+      }
     } catch (err) {
-      if (!mountedRef.current) return;
-      setError(err);
-    } finally {
-      if (!mountedRef.current) return;
-      setLoading(false);
+      if (!cancelledRef.current) {
+        setError(err);
+        setLoading(false);
+      }
     }
   }, [userId]);
 
   useEffect(() => {
+    cancelledRef.current = false;
     load();
+
+    return () => {
+      cancelledRef.current = true;
+    };
   }, [load]);
 
   const handleMarkAsRead = useCallback(
     async (id) => {
-      setLoading(true);
       try {
         await markNotificationAsRead(id);
-        await load(); 
-      } finally {
-        if (mountedRef.current) setLoading(false);
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notification) =>
+            notification.id === id
+              ? { ...notification, status: "read" }
+              : notification
+          )
+        );
+      } catch (err) {
+        setError(err);
       }
     },
-    [load]
+    []
   );
 
   const handleRemove = useCallback(
     async (id) => {
-      setLoading(true);
       try {
         await removeNotification(id);
-        await load();
-      } finally {
-        if (mountedRef.current) setLoading(false);
+        setNotifications((prevNotifications) =>
+          prevNotifications.filter((notification) => notification.id !== id)
+        );
+      } catch (err) {
+        setError(err);
       }
     },
-    [load]
+    []
   );
 
   return {
@@ -68,5 +80,3 @@ function useNotifications({ userId } = {}) {
     handleRemove
   };
 }
-
-export { useNotifications };

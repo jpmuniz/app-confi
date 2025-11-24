@@ -1,13 +1,17 @@
-import { notifications } from "./constants";
+import { notifications as initialNotifications } from "./constants";
   
   const simulateLatency = (result) =>
     new Promise((resolve) => setTimeout(() => resolve(result), 150));
   
+  let notifications = Array.isArray(initialNotifications) 
+    ? [...initialNotifications] 
+    : [];
+  
   export const notificationApiMock = {
     list({ userId } = {}) {
-      const list = notifications
-        .filter((notification) => (userId ? notification.userId === userId : true))
-        .map((notification) => ({ ...notification }));
+      const list = notifications.filter(
+        (notification) => !userId || notification.userId === userId
+      );
       return simulateLatency(list);
     },
   
@@ -24,7 +28,12 @@ import { notifications } from "./constants";
     },
   
     _reset(data = null) {
-      if (Array.isArray(data)) notifications = data;
+      if (Array.isArray(data)) {
+        notifications = data;
+        return
+      }
+      notifications = [...initialNotifications];
+      
     }
   };
   
