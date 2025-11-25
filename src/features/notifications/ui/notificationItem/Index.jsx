@@ -1,54 +1,78 @@
-import React, { memo, useCallback } from "react";
-import { Item, Top, Message, Meta, Actions, ActionButton } from "./style";
+import React, { memo, useCallback, useMemo } from "react";
+import {
+  Item,
+  Header,
+  Title,
+  NotificationTag,
+  StatusPill,
+  Message,
+  Meta,
+  Actions,
+  ActionButton
+} from "./style";
+import { formatTimestamp } from "./helper";
+import { STATUS_META } from "./constants";
 
 function NotificationItemComponent({ notification, onRead, onRemove }) {
   const { id, message, createdAt, status } = notification;
+  const currentStatus = useMemo(() => STATUS_META[status] ?? STATUS_META.read, [status]);
+  const isUnread = currentStatus === STATUS_META.unread;
+
+  const metaLabel = useMemo(() => formatTimestamp(createdAt), [createdAt]);
 
   const handleKey = useCallback(
-    (actionEvent) => {
-      if ((actionEvent.key === "Enter" || actionEvent.key === " ") && status === "unread") {
-        actionEvent.preventDefault();
+    (event) => {
+      if (isUnread && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
         onRead(id);
       }
     },
-    [id, onRead, status]
+    [id, isUnread, onRead]
   );
+
+  const handleRead = useCallback(() => onRead(id), [id, onRead]);
+  const handleRemove = useCallback(() => onRemove(id), [id, onRemove]);
 
   return (
     <Item
-      read={status === "read"}
+      tabIndex={0}
       role="article"
       aria-labelledby={`notif-${id}-text`}
-      tabIndex={0}
+      aria-live="polite"
+      aria-label={`${currentStatus.ariaLabel}: ${message}`}
       onKeyDown={handleKey}
     >
-      <Top>
-        <div id={`notif-${id}-text`}>
+      <Header>
+        <Title id={`notif-${id}-text`}>
+          <NotificationTag tone={currentStatus.tone}>
+            <span aria-hidden="true">{currentStatus.icon}</span>
+            {currentStatus.label}
+          </NotificationTag>
           <Message>{message}</Message>
-          <Meta>{new Date(createdAt).toLocaleString()}</Meta>
-        </div>
-        <div aria-hidden>
-          {status === "unread" ? <span aria-label="Não lida">🔔</span> : <span aria-label="Lida">✓</span>}
-        </div>
-      </Top>
+          <Meta>{metaLabel}</Meta>
+        </Title>
+        <StatusPill tone={currentStatus.tone} aria-live="assertive">
+          {currentStatus.badge}
+        </StatusPill>
+      </Header>
 
       <Actions>
-        {status === "unread" && (
+        {isUnread && (
           <ActionButton
+            variant="primary"
             type="button"
-            onClick={() => onRead(id)}
+            onClick={handleRead}
+            aria-label={`Marcar como lida: ${message}`}
             aria-pressed="false"
-            aria-label={`Marcar notificação ${message} como lida`}
           >
-            Marcar lida
+            Marcar como lida
           </ActionButton>
         )}
-
         <ActionButton
-          type="button"
           variant="danger"
-          onClick={() => onRemove(id)}
-          aria-label={`Remover notificação ${message}`}
+          type="button"
+          onClick={handleRemove}
+          aria-label={`Remover: ${message}`}
         >
           Remover
         </ActionButton>
@@ -57,4 +81,18 @@ function NotificationItemComponent({ notification, onRead, onRemove }) {
   );
 }
 
-export const NotificationItem = memo(NotificationItemComponent);
+function areEqual(prev, next) {
+  const prevNotification = prev.notification;
+  const nextNotification = next.notification;
+
+  return (
+    prevNotification.id === nextNotification.id &&
+    prevNotification.status === nextNotification.status &&
+    prevNotification.message === nextNotification.message &&
+    prevNotification.createdAt === nextNotification.createdAt &&
+    prev.onRead === next.onRead &&
+    prev.onRemove === next.onRemove
+  );
+}
+
+export const NotificationItem = memo(NotificationItemComponent, areEqual);
