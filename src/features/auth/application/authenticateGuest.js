@@ -1,9 +1,5 @@
 import { authService } from "../infra/authService";
 
-/**
- * Retorna um usuário convidado autenticado. Reutiliza o token existente ou
- * gera um novo caso não exista/esteja inválido.
- */
 export async function authenticateGuest({ service = authService } = {}) {
   let guest = service.validateToken();
   if (guest) return guest;
