@@ -1,15 +1,26 @@
 import { authService } from "../../auth/infra/authService";
 import { notifications as initialNotifications } from "./constants";
 
+const baselineNotifications = Array.isArray(initialNotifications)
+  ? [...initialNotifications]
+  : [];
+
+const DEFAULT_GUEST_ID =
+  baselineNotifications[0]?.userId ??
+  (typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : "guest-default");
+
+let notifications = [...baselineNotifications];
+
 function ensureAuth() {
+  const hasNotificationsFor = (id) =>
+    notifications.some((notification) => notification.userId === id);
+
   let user = authService.validateToken();
 
-  if (!user) {
-    const fallbackId =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `guest-${Date.now()}`;
-    authService.generateTokenForGuest(fallbackId);
+  if (!user || !hasNotificationsFor(user.id)) {
+    authService.generateTokenForGuest(DEFAULT_GUEST_ID);
     user = authService.validateToken();
   }
 
@@ -24,8 +35,6 @@ function ensureAuth() {
 
 const simulateLatency = (result) =>
   new Promise((resolve) => setTimeout(() => resolve(result), 150));
-
-let notifications = Array.isArray(initialNotifications) ? [...initialNotifications] : [];
 
 export const notificationApiMock = {
   list({ userId } = {}) {
@@ -54,6 +63,6 @@ export const notificationApiMock = {
       notifications = data;
       return;
     }
-    notifications = [...initialNotifications];
+    notifications = [...baselineNotifications];
   }
 };

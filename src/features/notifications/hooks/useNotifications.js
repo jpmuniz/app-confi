@@ -16,7 +16,7 @@ export function useNotifications({ userId } = {}) {
     setError(null);
 
     try {
-      const list = await getNotifications({ userId });
+      const list = await getNotifications();
       
       if (!cancelledRef.current) {
         setNotifications(list);

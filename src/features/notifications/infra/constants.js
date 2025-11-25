@@ -19,6 +19,27 @@ let notifications = [
       status: "unread",
       createdAt: "2024-01-10T09:15:00Z",
       userId: "u1"
+    },
+    {
+      id: "4",
+      message: "Ler a Bíblia.",
+      status: "unread",
+      createdAt: "2024-02-05T05:00:00Z",
+      userId: "u1"
+    },
+    {
+      id: "5",
+      message: "Estudar JavaScript.",
+      status: "unread",
+      createdAt: "2025-01-10T09:15:00Z",
+      userId: "u1"
+    },
+    {
+      id: "6",
+      message: "Estudar React.",
+      status: "unread",
+      createdAt: "2025-01-10T09:15:30Z",
+      userId: "u1"
     }
   ];
 
