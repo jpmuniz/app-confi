@@ -40,7 +40,51 @@ let notifications = [
       status: "unread",
       createdAt: "2025-01-10T09:15:30Z",
       userId: "u1"
-    }
+    },
+    {
+      id: "7",
+      message: "Estudar Node.js.",
+      status: "unread",
+      createdAt: "2025-01-10T09:16:00Z",
+      userId: "u1"
+    },
+    
+    {
+      id: "8",
+      message: "Estudar Python.",
+      status: "unread",
+      createdAt: "2025-01-10T09:16:30Z",
+      userId: "u1"
+    },
+    {
+      id: "9",
+      message: "Estudar Java.",
+      status: "unread",
+      createdAt: "2025-01-10T09:17:00Z",
+      userId: "u1"
+    },
+    {
+      id: "10",
+      message: "Estudar C#.",
+      status: "unread",
+      createdAt: "2025-01-10T09:17:30Z",
+      userId: "u1"
+    },
+    {
+      id: "11",
+      message: "Estudar Go.",
+      status: "unread",
+      createdAt: "2025-01-10T09:18:00Z",
+      userId: "u1"
+    },
+    {
+      id: "12",
+      message: "Estudar Rust.",
+      status: "unread",
+      createdAt: "2025-01-10T09:18:30Z",
+      userId: "u1"
+    },
+    
   ];
 
   export { notifications };

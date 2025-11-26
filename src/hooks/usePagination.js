@@ -7,7 +7,7 @@ export function usePagination(items = [], perPage = 5) {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [items]);
+  }, [items, perPage]);
 
   const paginatedItems = useMemo(() => {
     const start = currentPage * perPage;

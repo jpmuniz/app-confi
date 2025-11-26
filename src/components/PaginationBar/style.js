@@ -46,3 +46,18 @@ export const Summary = styled.span`
   color: #374151;
 `;
 
+export const Select = styled.select`
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #111827;
+
+  &:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.5);
+  }
+`;
+

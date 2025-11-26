@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { useNotifications } from "./features/notifications/hooks/useNotifications.js";
 import { Container, PageShell, Header } from "./styles/style.js";
 import { PaginationBar } from "./components/PaginationBar/Index.jsx";
@@ -9,7 +9,8 @@ const NotificationList =
 
 export default function App() {
   const { notifications, error, handleMarkAsRead, handleRemove } = useNotifications({ userId: "u1" });
-  const limit = 5;
+  const [pageSize, setPageSize] = useState(5);
+  const pageSizeOptions = [5, 10, 15];
   const {
     paginatedItems,
     currentPage,
@@ -19,7 +20,7 @@ export default function App() {
     endIndex,
     handlePrevious,
     handleNext
-  } = usePagination(notifications, limit);
+  } = usePagination(notifications, pageSize);
 
   return (
     <Container>
@@ -42,6 +43,9 @@ export default function App() {
           totalPages={totalPages}
           onPrevious={handlePrevious}
           onNext={handleNext}
+          pageSize={pageSize}
+          pageSizeOptions={pageSizeOptions}
+          onPageSizeChange={setPageSize}
         />
 
         <Suspense fallback={<p>Carregando lista...</p>}>
