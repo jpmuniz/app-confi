@@ -12,13 +12,20 @@ Projeto de demonstração de um painel com notificações autenticadas, paginaç
 
 ## Setup & Execução
 
-```bash
-npm install --legacy-peer-deps
-npm run dev
-```
+1. Entre na pasta do projeto:
+   ```bash
+   cd app-confi
+   ```
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Rode o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
 
 - O comando `npm run dev` sobe o Vite em `http://localhost:5173`.
-- O projeto exige `legacy-peer-deps` por causa do peer `@testing-library/react@14` (que ainda não declara compatibilidade com React 19).
 
 ## Testes
 
