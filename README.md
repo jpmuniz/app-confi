@@ -8,7 +8,7 @@ Projeto de demonstração de um painel com notificações autenticadas, paginaç
 - **Casos de uso:** a camada `application` oferece as operações `getNotifications`, `markAsRead` e `removeNotification` que delegam ao mock (`notificationApiMock`).
 - **Infraestrutura:** `createAuthService` gera e valida tokens falsos; `notificationApiMock` exige autenticação, filtra por `userId` e expõe `_reset`.
 - **Hooks/UI:** `useNotifications` consome casos de uso, aceita serviços injetados e expõe handlers; a lista é renderizada pelo `NotificationList`, `NotificationItem` e `PaginationBar` com estilo inspirado no Gmail.
-- **Testes:** Vitest + Happy DOM (`vitest.config.js`) permitindo testes unitários com React 19 sem instalar `jsdom`.
+- **Testes:** Vitest + Happy DOM (`vitest.config.js`) permitindo testes unitários com React 18 sem instalar `jsdom`.
 
 ## Setup & Execução
 
@@ -52,4 +52,5 @@ npm run test
 - Documente o passo `npm install --legacy-peer-deps` antes de rodar os testes em ambientes novos.
 - A estrutura de mocks permite trocar `notificationApiMock` por um adaptador HTTP sem mexer nos hooks/UI.
 - Para adicionar mais cobertura, inclua testes de UI com Testing Library + Vitest ou combine com Playwright.
+- Adicionamos um alias em `vite.config.js` (`react/compiler-runtime` → `react/jsx-runtime`) para superar o erro que o Netlify reportou during build.
 
