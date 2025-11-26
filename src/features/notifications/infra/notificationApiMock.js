@@ -1,68 +1,73 @@
 import { authService } from "../../auth/infra/authService";
-import { notifications as initialNotifications } from "./constants";
+import { notifications as defaultNotifications } from "./constants";
 
-const baselineNotifications = Array.isArray(initialNotifications)
-  ? [...initialNotifications]
-  : [];
+const createNotificationApiMock = ({
+  auth = authService,
+  notifications = defaultNotifications
+} = {}) => {
+  const baseline = Array.isArray(notifications) ? [...notifications] : [];
+  const defaultGuestId =
+    baseline[0]?.userId ??
+    (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "guest-default");
 
-const DEFAULT_GUEST_ID =
-  baselineNotifications[0]?.userId ??
-  (typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : "guest-default");
+  let state = [...baseline];
 
-let notifications = [...baselineNotifications];
+  const hasNotificationsFor = (id) => state.some((notification) => notification.userId === id);
 
-function ensureAuth() {
-  const hasNotificationsFor = (id) =>
-    notifications.some((notification) => notification.userId === id);
+  const ensureAuth = () => {
+    let user = auth.validateToken();
 
-  let user = authService.validateToken();
+    if (!user || !hasNotificationsFor(user.id)) {
+      auth.generateTokenForGuest(defaultGuestId);
+      user = auth.validateToken();
+    }
 
-  if (!user || !hasNotificationsFor(user.id)) {
-    authService.generateTokenForGuest(DEFAULT_GUEST_ID);
-    user = authService.validateToken();
-  }
+    if (!user) {
+      const error = new Error("Unauthorized");
+      error.status = 401;
+      throw error;
+    }
 
-  if (!user) {
-    const error = new Error("Unauthorized");
-    error.status = 401;
-    throw error;
-  }
+    return user;
+  };
 
-  return user;
-}
+  const simulateLatency = (result) =>
+    new Promise((resolve) => setTimeout(() => resolve(result), 150));
 
-const simulateLatency = (result) =>
-  new Promise((resolve) => setTimeout(() => resolve(result), 150));
-
-export const notificationApiMock = {
-  list({ userId } = {}) {
+  const list = ({ userId } = {}) => {
     const user = ensureAuth();
     const targetUserId = userId ?? user.id;
-    const list = notifications.filter((notification) => notification.userId === targetUserId);
-    return simulateLatency(list);
-  },
+    if (userId && userId !== user.id) {
+      throw Object.assign(new Error("Unauthorized user access"), { status: 401 });
+    }
 
-  markAsRead(id) {
+    const filtered = state.filter((notification) => notification.userId === targetUserId);
+    return simulateLatency(filtered.map((notification) => ({ ...notification })));
+  };
+
+  const markAsRead = (id) => {
     ensureAuth();
-    notifications = notifications.map((notification) =>
+    state = state.map((notification) =>
       notification.id === id ? { ...notification, status: "read" } : notification
     );
     return simulateLatency(true);
-  },
+  };
 
-  remove(id) {
+  const remove = (id) => {
     ensureAuth();
-    notifications = notifications.filter((notification) => notification.id !== id);
+    state = state.filter((notification) => notification.id !== id);
     return simulateLatency(true);
-  },
+  };
 
-  _reset(data = null) {
+  const _reset = (data = null) => {
     if (Array.isArray(data)) {
-      notifications = data;
+      state = data;
       return;
     }
-    notifications = [...baselineNotifications];
-  }
+    state = [...baseline];
+  };
+
+  return { list, markAsRead, remove, _reset };
 };
+
+export const notificationApiMock = createNotificationApiMock();
