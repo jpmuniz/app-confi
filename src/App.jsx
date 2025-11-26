@@ -5,7 +5,7 @@ import { PaginationBar } from "./components/PaginationBar/Index.jsx";
 import { usePagination } from "./hooks/usePagination.js";
 
 const NotificationList =
-  lazy(() => import("./features/notifications/ui/notificationList/index").then((component) => ({ default: component.NotificationList })));
+  lazy(() => import("./features/notifications/ui/notificationList/index.jsx").then((component) => ({ default: component.NotificationList })));
 
 export default function App() {
   const { notifications, error, handleMarkAsRead, handleRemove } = useNotifications({ userId: "u1" });
