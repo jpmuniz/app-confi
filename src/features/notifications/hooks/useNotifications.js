@@ -1,14 +1,23 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { getNotifications } from "../application/getNotifications";
-import { markNotificationAsRead } from "../application/markAsRead";
-import { removeNotification } from "../application/removeNotification";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { getNotifications } from "../application/getNotifications.js";
+import { markNotificationAsRead } from "../application/markAsRead.js";
+import { removeNotification } from "../application/removeNotification.js";
 
-
-export function useNotifications({ userId } = {}) {
+export function useNotifications({ userId, services } = {}) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const cancelledRef = useRef(false);
+
+  const resolvedServices = useMemo(
+    () =>
+      services ?? {
+        getNotifications,
+        markNotificationAsRead,
+        removeNotification
+      },
+    [services]
+  );
 
   const load = useCallback(async () => {
     cancelledRef.current = false;
@@ -16,7 +25,7 @@ export function useNotifications({ userId } = {}) {
     setError(null);
 
     try {
-      const list = await getNotifications();
+      const list = await resolvedServices.getNotifications();
       
       if (!cancelledRef.current) {
         setNotifications(list);
@@ -28,7 +37,7 @@ export function useNotifications({ userId } = {}) {
         setLoading(false);
       }
     }
-  }, [userId]);
+  }, [userId, resolvedServices]);
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -42,7 +51,7 @@ export function useNotifications({ userId } = {}) {
   const handleMarkAsRead = useCallback(
     async (id) => {
       try {
-        await markNotificationAsRead(id);
+        await resolvedServices.markNotificationAsRead(id);
         setNotifications((prevNotifications) =>
           prevNotifications.map((notification) =>
             notification.id === id
@@ -54,13 +63,13 @@ export function useNotifications({ userId } = {}) {
         setError(err);
       }
     },
-    []
+    [resolvedServices]
   );
 
   const handleRemove = useCallback(
     async (id) => {
       try {
-        await removeNotification(id);
+        await resolvedServices.removeNotification(id);
         setNotifications((prevNotifications) =>
           prevNotifications.filter((notification) => notification.id !== id)
         );
@@ -68,7 +77,7 @@ export function useNotifications({ userId } = {}) {
         setError(err);
       }
     },
-    []
+    [resolvedServices]
   );
 
   return {

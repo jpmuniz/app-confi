@@ -1,5 +1,5 @@
-import { authService } from "../../auth/infra/authService";
-import { notifications as defaultNotifications } from "./constants";
+import { authService } from "../../auth/infra/authService.js";
+import { notifications as defaultNotifications } from "./constants.js";
 
 const createNotificationApiMock = ({
   auth = authService,
@@ -38,7 +38,8 @@ const createNotificationApiMock = ({
     const user = ensureAuth();
     const targetUserId = userId ?? user.id;
     if (userId && userId !== user.id) {
-      throw Object.assign(new Error("Unauthorized user access"), { status: 401 });
+      const error = Object.assign(new Error("Unauthorized user access"), { status: 401 });
+      return Promise.reject(error);
     }
 
     const filtered = state.filter((notification) => notification.userId === targetUserId);
@@ -71,3 +72,4 @@ const createNotificationApiMock = ({
 };
 
 export const notificationApiMock = createNotificationApiMock();
+export { createNotificationApiMock };

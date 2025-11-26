@@ -1,5 +1,5 @@
-import { GuestUser } from "../domain/GuestUser";
-import { createFakeJWT, decodeFakeJWT } from "./jwtFake";
+import { GuestUser } from "../domain/GuestUser.js";
+import { createFakeJWT, decodeFakeJWT } from "./jwtFake.js";
 
 const TOKEN_KEY = "auth_token";
 const DEFAULT_EXPIRATION_MS = 24 * 60 * 60 * 1000;

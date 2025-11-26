@@ -1,4 +1,4 @@
-import { notificationApiMock } from "../infra/notificationApiMock";
+import { notificationApiMock } from "../infra/notificationApiMock.js";
 
 async function getNotifications() {
   return notificationApiMock.list();
