@@ -1,18 +1,48 @@
-# React + Vite
+# App Confi – Painel de Notificações
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Projeto de demonstração de um painel com notificações autenticadas, paginação flexível e hooks testáveis. A estrutura segue princípios de Clean Architecture e Domain-Driven Design.
 
-Currently, two official plugins are available:
+## Visão geral
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Domínio:** `features/notifications/domain/Notification`.
+- **Casos de uso:** a camada `application` oferece as operações `getNotifications`, `markAsRead` e `removeNotification` que delegam ao mock (`notificationApiMock`).
+- **Infraestrutura:** `createAuthService` gera e valida tokens falsos; `notificationApiMock` exige autenticação, filtra por `userId` e expõe `_reset`.
+- **Hooks/UI:** `useNotifications` consome casos de uso, aceita serviços injetados e expõe handlers; a lista é renderizada pelo `NotificationList`, `NotificationItem` e `PaginationBar` com estilo inspirado no Gmail.
+- **Testes:** Vitest + Happy DOM (`vitest.config.js`) permitindo testes unitários com React 19 sem instalar `jsdom`.
 
-## React Compiler
+## Setup & Execução
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+```bash
+npm install --legacy-peer-deps
+npm run dev
+```
 
-Note: This will impact Vite dev & build performances.
+- O comando `npm run dev` sobe o Vite em `http://localhost:5173`.
+- O projeto exige `legacy-peer-deps` por causa do peer `@testing-library/react@14` (que ainda não declara compatibilidade com React 19).
 
-## Expanding the ESLint configuration
+## Testes
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run test
+```
+
+- Suites implementadas:
+  1. `usePagination` (`src/hooks/__tests__/usePagination.test.jsx`) – valida slice, totalPages e navegação.
+  2. `notificationApiMock` (`src/features/notifications/infra/__tests__/notificationApiMock.test.js`) – garante autenticação, marcação e remoção.
+  3. `useNotifications` (`src/features/notifications/hooks/__tests__/useNotifications.test.jsx`) – usa serviços injetados para testar carregamento, atualização, remoção e erro.
+- O ambiente é `happy-dom`, por isso não é necessário instalar `jsdom` manual.
+
+## Decisões principais
+
+1. **Dependências e DI:** `useNotifications` aceita o objeto `services`, tornando o hook testável sem alterar o comportamento API.
+2. **Mock seguro:** `notificationApiMock` usa `authService` para garantir autenticação antes de listar/atualizar notificações; `_reset` facilita resets nos testes.
+3. **Paginação modular:** `usePagination` calcula `startIndex`/`endIndex`/`totalPages` e foi combinado com `PaginationBar` (botões + seletor `pageSize`), liberando o UI de cálculos extras.
+4. **Imports ESM:** todos os módulos usam extensão `.js`, evitando erros no Vitest quando o projeto está em `"type": "module"`.
+5. **Testes consistentes:** suites em Vitest validam tanto lógica (hooks, mock) quanto contratos (páginas, autenticação).
+
+## Observações
+
+- Documente o passo `npm install --legacy-peer-deps` antes de rodar os testes em ambientes novos.
+- A estrutura de mocks permite trocar `notificationApiMock` por um adaptador HTTP sem mexer nos hooks/UI.
+- Para adicionar mais cobertura, inclua testes de UI com Testing Library + Vitest ou combine com Playwright.
+
